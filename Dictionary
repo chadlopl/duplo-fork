@@ -1,0 +1,131 @@
+#include <iostream>
+#include <fstream>
+#include <vector>
+#include <string>
+#include <algorithm>
+
+using namespace std;
+
+// Structure for word details: name, type, and definition
+struct WordDetails {
+    string name;
+    string type;
+    string definition;
+};
+
+// Function to convert text to lowercase
+string convertToLower(string text) {
+    transform(text.begin(), text.end(), text.begin(), ::tolower);
+    return text;
+}
+
+// Function to read the dictionary file and extract word details
+vector<WordDetails> extractDictionary(const string& fileName) {
+    vector<WordDetails> wordDictionary;
+    ifstream dictionaryFile(fileName);
+
+    if (!dictionaryFile.is_open()) {
+        cout << "Failed to open the file\n";
+        return wordDictionary;
+    }
+
+    string line;
+    WordDetails wordInfo;
+
+    while (getline(dictionaryFile, line)) {
+        if (line.substr(0, 6) == "Type: ") {
+            wordInfo.type = line.substr(6);
+        }
+        else if (line.substr(0, 12) == "Definition: ") {
+            wordInfo.definition = line.substr(12);
+        }
+        else if (line.substr(0, 6) == "Word: ") {
+            wordInfo.name = line.substr(6);
+        }
+        else if (line.empty()) {
+            wordDictionary.push_back(wordInfo);
+            wordInfo = {};
+        }
+    }
+
+    dictionaryFile.close();
+    return wordDictionary;
+}
+
+// Function to format word according to given specifications
+string formatWord(const string& word) {
+    string formattedWord = word;
+    formattedWord.erase(remove(formattedWord.begin(), formattedWord.end(), ' '), formattedWord.end());
+    transform(formattedWord.begin(), formattedWord.end(), formattedWord.begin(), ::tolower);
+    return formattedWord;
+}
+
+// Function to search for a word in the dictionary
+void searchWord(const vector<WordDetails>& wordDictionary) {
+    while (true) {
+        cout << "Select an option:\n";
+        cout << "1. Find definition by entering a term\n";
+        cout << "2. Exit\n";
+        cout << "Enter option (1 or 2): ";
+
+        int userOption;
+        cin >> userOption;
+
+        if (userOption == 1) {
+            string userTerm;
+            cout << "Enter a term: ";
+            cin >> userTerm;
+
+            string lowerCaseTerm = convertToLower(userTerm);
+
+            bool found = false;
+            for (const auto& word : wordDictionary) {
+                string formattedWord = formatWord(word.name);
+                if (formattedWord == lowerCaseTerm) {
+                    cout << "Term: " << word.name << "\n";
+                    cout << "Type: " << word.type << "\n";
+                    cout << "Definition: " << word.definition << "\n";
+                    found = true;
+                    break;
+                }
+            }
+
+            if (!found) {
+                cout << "Unable to find the term.\n";
+            }
+
+            cout << endl; // Print a blank line for spacing
+        }
+        else if (userOption == 2) {
+            cout << "Exiting the program. Thank You!\n";
+            break;
+        }
+        else {
+            cout << "Invalid option. Please enter 1 or 2.\n";
+        }
+    }
+}
+
+int main() {
+    // Prologue
+    /*
+    * Module: Assignment1Dictionary
+    * Function: Load, store and display dictionary of English words along with their types and definitions.
+    * Input: Dictionary Database and User Input word
+    * Output: Prints the name, type, and definition of a word entered by the user or its not available.
+    * Written by: Chandupa Poorna Lokuliyana (10664773)
+    * Date: December 20, 2023
+    */
+
+    string fileName = "dictionary_2024S0.txt";
+    vector<WordDetails> wordDictionary = extractDictionary(fileName);
+
+    if (wordDictionary.empty()) {
+        cout << "Dictionary is empty or file not found.\n";
+        return 1;
+    }
+
+    searchWord(wordDictionary);
+
+    return 0;
+}
